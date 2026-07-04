@@ -42,10 +42,10 @@ func plParseJson(emo *Emojis) int {
 	var fromSite bool
 	var fpath string
 	fmt.Println("mastodon emoji downloader " + VERSION)
-	fmt.Println("当前为交互模式，如果您想使用命令行模式，请执行--help查看用法\n\n")
+	fmt.Println("当前为交互模式，如果您想使用命令行模式，请执行--help查看用法")
 	fmt.Println("今天您想要来点什么？")
-	fmt.Println("1.从url下载mastodon emoji\n")
-	fmt.Println("2.从json下载mastodon emoji\n")
+	fmt.Println("1.从url下载mastodon emoji")
+	fmt.Println("2.从json下载mastodon emoji")
 	for {
 		choice := stario.MessageBox("请输入您的选择：", "0").MustInt()
 		if choice != 1 && choice != 2 {
