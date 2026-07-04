@@ -41,8 +41,8 @@ func plParseJson(emo *Emojis) int {
 	var fromSite bool
 	var fpath string
 	fmt.Println("Mastodon Emoji Downloader")
-	fmt.Println("You are currently in interactive mode. If you want to use the command-line mode, run '--help' to view the usage instructions.")
-	fmt.Println("Choose any mode")
+	fmt.Println("You are currently in interactive mode. If you want to use manual mode, run '--help' to view the usage instructions.")
+	fmt.Println("Choose how to download:")
 	fmt.Println("1. Download Mastodon emojis from a server URL")
 	fmt.Println("2. Download Mastodon emojis from a JSON file")
 	for {
