@@ -17,18 +17,18 @@ var useJson bool
 
 func init() {
 	cmdRoot.AddCommand(cmdMain, cmdShow)
-	cmdMain.Flags().StringVarP(&emo.SaveFolders, "savepath", "s", "./myEmojis", "emoji下载文件夹")
-	cmdMain.Flags().StringVarP(&emo.AuthCookie, "cookie", "c", "", "认证cookie,填入_session_id的值")
-	cmdMain.Flags().BoolVarP(&emo.IgnoreErr, "ignore-error", "i", false, "忽略下载错误")
-	cmdMain.Flags().BoolVarP(&emo.Zip2Tarfile, "zip", "z", true, "压缩为tar.gz文件")
-	cmdMain.Flags().BoolVarP(&emo.DeletedOriginIfZip, "delete-after-zip", "d", false, "压缩为tar.gz文件后删除原始文件")
-	cmdMain.Flags().StringSliceVarP(&allowCate, "allow-download-category", "a", []string{}, "要下载的分类")
-	cmdMain.Flags().StringVarP(&regFilter, "filter", "f", "", "emoji名称白名单正则表达式")
-	cmdMain.Flags().StringVarP(&regOld, "replace-old", "o", "", "emoji名称替旧名称正则表达式")
-	cmdMain.Flags().StringVarP(&regNew, "replace-new", "r", "", "emoji名称替换新字符串")
-	cmdMain.Flags().IntVarP(&emo.Threads, "threads", "n", 4, "同时下载协程数")
-	cmdMain.Flags().StringVarP(&emo.Proxy, "proxy", "p", "", "使用代理")
-	cmdRoot.PersistentFlags().BoolVarP(&useJson, "use-json-file", "j", false, "使用json文件而不是url")
+	cmdMain.Flags().StringVarP(&emo.SaveFolders, "savepath", "s", "./Emojis", "Enter the path of the emoji download folder. (Default is 'Emojis' in the current path)")
+	cmdMain.Flags().StringVarP(&emo.AuthCookie, "cookie", "c", "", "Enter the value of '_session_id' for the authentication cookie. (Optional)")
+	cmdMain.Flags().BoolVarP(&emo.IgnoreErr, "ignore-error", "i", false, "Ignore download errors? (Default is false)")
+	cmdMain.Flags().BoolVarP(&emo.Zip2Tarfile, "zip", "z", true, "Compress into a tar.gz file? (Default is true)")
+	cmdMain.Flags().BoolVarP(&emo.DeletedOriginIfZip, "delete-after-zip", "d", false, "Delete the folder after compressing? (Default is false)")
+	cmdMain.Flags().StringSliceVarP(&allowCate, "allow-download-category", "a", []string{}, "Categories to download? (Optional)")
+	cmdMain.Flags().StringVarP(&regFilter, "filter", "f", "", "Enter the RegEx for the emoji name whitelist. (Optional)")
+	cmdMain.Flags().StringVarP(&regOld, "replace-old", "o", "", "Enter the RegEx for replacing old emoji names with new ones. (Optional)")
+	cmdMain.Flags().StringVarP(&regNew, "replace-new", "r", "", "Enter the RegEx for replacing emoji names with a new string. (Optional)")
+	cmdMain.Flags().IntVarP(&emo.Threads, "threads", "n", 4, "Number of concurrent downloads? (Optional, default is 4)")
+	cmdMain.Flags().StringVarP(&emo.Proxy, "proxy", "p", "", "Use a proxy? (Optional)")
+	cmdRoot.PersistentFlags().BoolVarP(&useJson, "use-json-file", "j", false, "Use a JSON file instead of a URL? (Optional, default is false)")
 }
 
 var cmdRoot = &cobra.Command{
@@ -41,26 +41,26 @@ var cmdMain = &cobra.Command{
 	Short: "Mastodon Emoji Downloader",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
-			starlog.Errorln("请输入一个url或文件地址")
+			starlog.Errorln("Please enter the URL for the Mastodon server or the path for the JSON file.")
 			os.Exit(1)
 		}
 		if regFilter != "" {
 			rpgF, err := regexp.Compile(regFilter)
 			if err != nil {
-				starlog.Errorln("invalid regexp:", regFilter, err)
+				starlog.Errorln("Invalid RegEx: ", regFilter, err)
 			}
 			emo.filterRp = rpgF
 		}
 		if regOld != "" {
 			rpgF, err := regexp.Compile(regOld)
 			if err != nil {
-				starlog.Errorln("invalid regexp:", regOld, err)
+				starlog.Errorln("Invalid RegEx: ", regOld, err)
 			}
 			emo.rpCodeOld = rpgF
 			emo.rpNew = regNew
 		}
 		if emo.Threads <= 0 {
-			starlog.Errorln("并发下载数不能小于等于0", emo.Threads)
+			starlog.Errorln("Concurrent downloads cannot be less than or equal to 0. ", emo.Threads)
 			os.Exit(3)
 		}
 		url := strings.ToLower(strings.TrimSpace(args[0]))
@@ -69,14 +69,14 @@ var cmdMain = &cobra.Command{
 		}
 		err := emo.LoadAndParse(url, !useJson)
 		if err != nil {
-			starlog.Errorln("load emoji lists failed:", err)
+			starlog.Errorln("Load emoji lists failed: ", err)
 			os.Exit(4)
 		}
 		if len(allowCate) != 0 {
 			myMap := emo.CategoryCount()
 			for _, v := range allowCate {
 				if _, ok := myMap[v]; !ok {
-					starlog.Errorln(v, "not in the categroy lists,please check")
+					starlog.Errorln(v, "The category doesn't exist. Please check your input.")
 					os.Exit(5)
 				}
 				emo.AllowCategories[v] = true
@@ -84,9 +84,9 @@ var cmdMain = &cobra.Command{
 		}
 		err = emo.Download(showFn)
 		if err != nil {
-			starlog.Errorln("download failed", err)
+			starlog.Errorln("Download failed. ", err)
 		}
-		starlog.Infoln("finished")
+		starlog.Infoln("Done!")
 	},
 }
 
@@ -96,7 +96,7 @@ var cmdShow = &cobra.Command{
 	Short: "Show Mastodon Emoji Categories",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
-			starlog.Errorln("请输入一个url或文件地址")
+			starlog.Errorln("Please enter the URL for the Mastodon server or the path for the JSON file.")
 			os.Exit(1)
 		}
 		url := strings.ToLower(strings.TrimSpace(args[0]))
@@ -105,16 +105,16 @@ var cmdShow = &cobra.Command{
 		}
 		err := emo.LoadAndParse(url, !useJson)
 		if err != nil {
-			starlog.Errorln("load emoji lists failed:", err)
+			starlog.Errorln("Load emoji lists failed: ", err)
 			os.Exit(4)
 		}
 		ct, orderSlice, allCat := emo.Counts()
-		fmt.Println("按分类解析结果如下：")
-		fmt.Printf("%-5s %-10s %-28s\n", "序号", "表情个数", "分类名")
+		fmt.Println("Results for each category: ")
+		fmt.Printf("%-5s %-10s %-28s\n", "No.", "Emojis", "Name")
 		for k, v := range orderSlice {
 			fmt.Printf("%-5v %-10d %-28s\n", k+1, allCat[v], v)
 		}
-		starlog.Green("在%d个分类中共找到%d个表情\n", len(orderSlice), ct)
-		starlog.Infoln("已完成，保存到", emo.SaveFolders)
+		starlog.Green("%d emojis found in %d categories\n", len(orderSlice), ct)
+		starlog.Infoln("Done! Saved to: ", emo.SaveFolders)
 	},
 }
