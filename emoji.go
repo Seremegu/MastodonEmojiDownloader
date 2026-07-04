@@ -56,7 +56,7 @@ func (e *Emojis) Parse() error {
 	e.counts = make(map[string]int)
 	for _, v := range e.Lists {
 		if v.Category == "" {
-			v.Category = "未分类"
+			v.Category = "Uncategorized"
 		}
 		if _, ok := e.counts[v.Category]; !ok {
 			e.allCategories = append(e.allCategories, v.Category)
@@ -138,7 +138,7 @@ func (e *Emojis) Download(fns ...func(v Emoji, finished bool, err error)) error 
 exitfor:
 	for _, v := range e.Lists {
 		if v.Category == "" {
-			v.Category = "未分类"
+			v.Category = "Uncategorized"
 		}
 		if len(e.AllowCategories) == 0 || e.AllowCategories[v.Category] {
 			if !e.filterName(v.ShortCode) {
@@ -253,7 +253,7 @@ func NewEmojis(opt ...EmojiOpt) *Emojis {
 		counts:          make(map[string]int),
 		EmojiOpts: EmojiOpts{
 			Threads:     1,
-			SaveFolders: "./myEmojis",
+			SaveFolders: "./Emojis",
 		},
 	}
 	for _, v := range opt {
