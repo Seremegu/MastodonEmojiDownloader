@@ -1,10 +1,6 @@
-# emojidownloader
-Mastodon Emoji Downloader
+# Mastodon Emoji Downloader
+A fork of the one made by @Starainrt to be (machine) translated to English.
 
-
-1.自行编译，在go环境中直接 go build 即可。
-
-
-2.使用已编译程序
-
-在[release](https://github.com/Starainrt/emojidownloader/releases)界面按操作系统下载编译好的二进制文件运行即可。
+You can either:
+- Compile the repository by running `go build`
+- Download the binary from the [releases](https://github.com/Seremegu/MastodonEmojiDownloader/releases) page and run it with the terminal of choice.
