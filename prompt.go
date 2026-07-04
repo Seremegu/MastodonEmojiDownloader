@@ -12,44 +12,43 @@ import (
 
 var showFn = func(v Emoji, finished bool, err error) {
 	if err != nil {
-		starlog.Errorf("下载出错 分类:%-10s emoji:%s error:%v\n", v.Category, v.ShortCode, err)
+		starlog.Errorf("Download error for emoji '%s' in category '%-10s': %v \n", v.Category, v.ShortCode, err)
 		return
 	}
 	if !finished {
-		starlog.Noticef("开始下载 分类:%-10s emoji:%s \n", v.Category, v.ShortCode)
+		starlog.Noticef("Downloading emoji '%s' in category '%-10s' \n", v.Category, v.ShortCode)
 		return
 	}
-	starlog.Infof("下载完成 分类:%-10s emoji:%s \n", v.Category, v.ShortCode)
+	starlog.Infof("Downloaded emoji '%s' in category '%-10s' \n", v.Category, v.ShortCode)
 }
 
 func PromotMode() {
-	bunny()
 	starlog.SetLevelColor(starlog.LvNotice, []starlog.Attr{starlog.FgHiYellow})
 	emo := NewEmojis()
 	checkFn := func(fn func(emo *Emojis) int) {
 		if code := fn(emo); code != 0 {
-			stario.StopUntil("出现错误，按任意键结束", "", true)
+			stario.StopUntil("Press any key to exit if an error occurs", "", true)
 			os.Exit(code)
 		}
 	}
 	for _, v := range []func(*Emojis) int{plParseJson, plGetDownloadChoice, plRegexp, plDownload} {
 		checkFn(v)
 	}
-	stario.StopUntil("下载完毕，按任意键退出", "", true)
+	stario.StopUntil("Press any key to exit if the download is complete", "", true)
 }
 
 func plParseJson(emo *Emojis) int {
 	var fromSite bool
 	var fpath string
-	fmt.Println("mastodon emoji downloader " + VERSION)
-	fmt.Println("当前为交互模式，如果您想使用命令行模式，请执行--help查看用法")
-	fmt.Println("今天您想要来点什么？")
-	fmt.Println("1.从url下载mastodon emoji")
-	fmt.Println("2.从json下载mastodon emoji")
+	fmt.Println("Mastodon Emoji Downloader")
+	fmt.Println("You are currently in interactive mode. If you want to use the command-line mode, run '--help' to view the usage instructions.")
+	fmt.Println("Choose any mode")
+	fmt.Println("1. Download Mastodon emojis from a server URL")
+	fmt.Println("2. Download Mastodon emojis from a JSON file")
 	for {
-		choice := stario.MessageBox("请输入您的选择：", "0").MustInt()
+		choice := stario.MessageBox("Enter:", "0").MustInt()
 		if choice != 1 && choice != 2 {
-			starlog.Red("请输入1或者2哦，您的输入为%d\n", choice)
+			starlog.Red("Please enter 1 or 2. Your input is %d\n", choice)
 			continue
 		}
 		if choice == 1 {
@@ -59,13 +58,13 @@ func plParseJson(emo *Emojis) int {
 	}
 	for {
 		if fromSite {
-			fmt.Print("请输入Mastodon域名,不带https：")
+			fmt.Print("Enter the Mastodon server domain name, without 'https':")
 		} else {
-			fmt.Print("请输入Json文件地址：")
+			fmt.Print("Enter the path of the JSON file:")
 		}
 		fpath = stario.MessageBox("", "").MustString()
 		if fpath == "" {
-			starlog.Red("请实际输入哦")
+			starlog.Red("Please enter the actual input.")
 			continue
 		}
 		break
@@ -74,17 +73,17 @@ func plParseJson(emo *Emojis) int {
 		if strings.Index(fpath, "https://") != 0 {
 			fpath = "https://" + fpath
 		}
-		if stario.YesNo("是否使用代理？(y/N)", false) {
-			emo.Proxy = stario.MessageBox("请输入代理地址:", "").MustString()
+		if stario.YesNo("Use a proxy? (y/N)", false) {
+			emo.Proxy = stario.MessageBox("Enter the proxy address:", "").MustString()
 		}
-		if stario.YesNo("是否设置Mastodon Cookie？(y/N)", false) {
-			emo.AuthCookie = stario.MessageBox("请输入_session_id Cookie的值:", "").MustString()
+		if stario.YesNo("Use a Mastodon cookie? (y/N)", false) {
+			emo.AuthCookie = stario.MessageBox("Enter the value of '_session_id' for the authentication cookie:", "").MustString()
 		}
 	}
-	starlog.Infoln("解析中......")
+	starlog.Infoln("Parsing...")
 	err := emo.LoadAndParse(fpath, fromSite)
 	if err != nil {
-		starlog.Errorln("解析失败！请检查", err)
+		starlog.Errorln("Parsing failed! Please check your input.", err)
 		return 1
 	}
 	return 0
@@ -92,27 +91,27 @@ func plParseJson(emo *Emojis) int {
 
 func plGetDownloadChoice(emo *Emojis) int {
 	ct, orderSlice, allCat := emo.Counts()
-	fmt.Println("按分类解析结果如下：")
-	fmt.Printf("%-5s %-10s %-28s\n", "序号", "表情个数", "分类名")
+	fmt.Println("Results for each category: ")
+	fmt.Printf("%-5s %-10s %-28s\n", "No.", "Emojis", "Name"
 	for k, v := range orderSlice {
 		fmt.Printf("%-5v %-10d %-28s\n", k+1, allCat[v], v)
 	}
-	starlog.Green("在%d个分类中共找到%d个表情\n", len(orderSlice), ct)
+	starlog.Green("%d emojis found in %d categories\n", len(orderSlice), ct)
 exitfor:
 	for {
-		choice, err := stario.MessageBox("请输入您要下载的分类序号，如需下载多个分类，用英文逗号分隔多个序号，下载全部表情直接回车:", "0").SliceInt(",")
+		choice, err := stario.MessageBox("Enter the category numbers you want to download. To download multiple categories, separate the numbers with commas. (Optional)", "0").SliceInt(",")
 		if err != nil {
-			starlog.Errorln("您的输入有误，请输入数字，用英文逗号分隔，请检查后重新输入", err)
+			starlog.Errorln("Please check your input, or just press Enter.", err)
 			continue
 		}
 		for _, v := range choice {
 			if v == 0 {
 				emo.AllowCategories = make(map[string]bool)
-				fmt.Println("准备下载：全部分类")
+				fmt.Println("Will download every category.")
 				break exitfor
 			}
 			emo.AllowCategories[orderSlice[v-1]] = true
-			fmt.Println("准备下载：", orderSlice[v-1])
+			fmt.Println("Will download:", orderSlice[v-1])
 		}
 		break
 	}
@@ -120,104 +119,57 @@ exitfor:
 }
 
 func plRegexp(emo *Emojis) int {
-	if stario.YesNo("是否开启白名单emoji名称？(y/N)", false) {
+	if stario.YesNo("Enable the emoji name whitelist, using RegEx? (y/N)", false) {
 		for {
-			rgpR, err := regexp.Compile(stario.MessageBox("请输入白名单正则表达式:", "").MustString())
+			rgpR, err := regexp.Compile(stario.MessageBox("Please enter the RegEx for the whitelist: ", "").MustString())
 			if err != nil {
-				starlog.Errorln("正则表达式不正确", err)
+				starlog.Errorln("Invalid RegEx: ", err)
 				continue
 			}
 			emo.filterRp = rgpR
 			break
 		}
 	}
-	if stario.YesNo("是否替换emoji名称？(y/N)", false) {
+	if stario.YesNo("Enable the emoji name replacement, using RegEx?  (y/N)", false) {
 		for {
-			rgpR, err := regexp.Compile(stario.MessageBox("请输入匹配emoji正则表达式:", "").MustString())
+			rgpR, err := regexp.Compile(stario.MessageBox("Enter the RegEx for replacing old emoji names with new ones: ", "").MustString())
 			if err != nil {
-				starlog.Errorln("正则表达式不正确", err)
+				starlog.Errorln("Invalid RegEx: ", err)
 				continue
 			}
 			emo.rpCodeOld = rgpR
 			break
 		}
-		emo.rpNew = stario.MessageBox("请输入替换后的新名称：", "").MustString()
+		emo.rpNew = stario.MessageBox("Enter the new name to be replaced: ", "").MustString()
 	}
 	return 0
 }
 
 func plDownload(emo *Emojis) int {
-	emo.SaveFolders = stario.MessageBox("请输入保存文件夹(默认：./myEmojis)：", "./myEmojis").MustString()
-	emo.IgnoreErr = stario.YesNo("是否忽略下载中的单个emoji下载错误？(Y/n)", true)
-	emo.Zip2Tarfile = stario.YesNo("是否打包为压缩文件？(Y/n)", true)
+	emo.SaveFolders = stario.MessageBox("Enter the path of the emoji download folder. (Default is 'Emojis' in the current path)：", "./Emojis").MustString()
+	emo.IgnoreErr = stario.YesNo("Ignore download errors? (Y/n)", true)
+	emo.Zip2Tarfile = stario.YesNo("Compress into a tar.gz file? (Y/n)", true)
 	if emo.Zip2Tarfile {
-		emo.DeletedOriginIfZip = stario.YesNo("是否在打包为压缩文件后删除原始的下载文件(Y/n)", true)
+		emo.DeletedOriginIfZip = stario.YesNo("Delete the folder after compressing? (y/N)", false)
 	}
 	for {
-		emo.Threads = stario.MessageBox("并发下载量(默认：16)：", "16").MustInt()
+		emo.Threads = stario.MessageBox("Number of concurrent downloads (Optional, default is 16)：", "16").MustInt()
 		if emo.Threads <= 0 {
-			starlog.Red("输入非法", emo.Threads)
+			starlog.Red("Invalid input: ", emo.Threads)
 			continue
 		}
 		break
 	}
 	var fn func(v Emoji, finished bool, err error) = nil
-	if stario.YesNo("是否显示下载日志？(Y/n)", true) {
+	if stario.YesNo("Display the download log? (Y/n)", true) {
 		fn = showFn
 	}
-	starlog.Infoln("开始下载...")
+	starlog.Infoln("Downloading...")
 	err := emo.Download(fn)
 	if err != nil {
-		starlog.Errorln("下载失败：", err)
+		starlog.Errorln("Download failed: ", err)
 		return 1
 	}
-	starlog.Infoln("下载成功!保存到", emo.SaveFolders)
-	fmt.Println(`tips:一键导入表情：
-非docker：
-RAILS_ENV=production bin/tootctl emoji import --category=自定义表情分类名 表情tar.gz文件地址
-
-docker：
-docker cp ./表情地址 web服务docker名:/tmp/表情名.tar.gz
-docker-compose exec web bin/tootctl emoji import --category=自定义表情分类名 /tmp/表情名.tar.gz`)
+	starlog.Infoln("Done! Saved to: ", emo.SaveFolders)
 	return 0
-}
-
-func bunny() {
-	str := `
-                                                            
-                                                            
-                  WMMMMa             rMMMMM:                
-                 MM   ,MMi          MM7   rM.               
-                 M      7MX       ;MZ      Mr               
-                 MB      .MX     rM;      7M                
-                 .M       :M:   iM:       M;                
-                  aM       SM   M7       MZ                 
-                   WM       M@ M0       M8                  
-                    WM       MMM      ,MS                   
-                     0M,     XM      SMi                    
-                 ;aW@BMZ             MMBW0S:                
-              aMM@Z;                    ,70MMW7             
-           7MM0;                             X@MB,          
-         XMM7                                   ZMM,        
-       ,MM:      .        ;,     ;:      ,,,.     2MW       
-      aMS    .ii;i;ii.   XMM ii:,MM   .i;i;i;ii.    MM,     
-     BM     :;ii:i:ii;:   ;..MMM ii  .;;:i:i:ii;,    SMi    
-    ZM     .;ii:i:i:iir       8      :;:i:::::ii;     rM    
-    M.     .;i:i:i:i:i;       0      .;i:i:i:::;i      0M   
-   MM       :;;iiiii;;,       W       ,i;iiiii;:        Mi  
-   M;         ,iiiii,        .B         .::::,          M@  
-   M:                         B                         MM  
-   MZ                         0                         MS  
-   rM  .S ;Xaaa0@MMMMMMMMMMMMMMMMMMMMMMMMMMMM0ZZZX,.2  ;M   
-    MM ;8M0Z8MMMMMMWMa;7r7rr;;i;;r;rr7;MM8BW0MMMZ8MB8  Mr   
-     MM rM    0M    Ma.:iiii;i;i;i;ii:.MX   ,Mr   .M iMS    
-      aMrM8    SM;  XM.ii;;r;r;r;;;;ii:M   BM.    M88M:     
-        8MMa    :MB  M0.;;r;;;;;;;;;i,MZ  MM     MMMS       
-          ;MW     MM  MW:ii;;;;;i;i:;MW 7M8     MM.         
-            MM     SM; BM0Xii:iii;2WMS BM,    rM8           
-             8M8         aWM@@W@@MBX         MMi            
-              .MM,           ,:.           7M8                     												   
-													  
-`
-	fmt.Println(str)
 }
