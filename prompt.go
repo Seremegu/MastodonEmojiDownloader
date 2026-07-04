@@ -27,14 +27,14 @@ func PromotMode() {
 	emo := NewEmojis()
 	checkFn := func(fn func(emo *Emojis) int) {
 		if code := fn(emo); code != 0 {
-			stario.StopUntil("Press any key to exit if an error occurs", "", true)
+			stario.StopUntil("An error occurred. Press any key to exit.", "", true)
 			os.Exit(code)
 		}
 	}
 	for _, v := range []func(*Emojis) int{plParseJson, plGetDownloadChoice, plRegexp, plDownload} {
 		checkFn(v)
 	}
-	stario.StopUntil("Press any key to exit if the download is complete", "", true)
+	stario.StopUntil("Done! Press any key to exit.", "", true)
 }
 
 func plParseJson(emo *Emojis) int {
@@ -46,7 +46,7 @@ func plParseJson(emo *Emojis) int {
 	fmt.Println("1. Download Mastodon emojis from a server URL")
 	fmt.Println("2. Download Mastodon emojis from a JSON file")
 	for {
-		choice := stario.MessageBox("Enter:", "0").MustInt()
+		choice := stario.MessageBox("Enter: ", "0").MustInt()
 		if choice != 1 && choice != 2 {
 			starlog.Red("Please enter 1 or 2. Your input is %d\n", choice)
 			continue
@@ -170,6 +170,6 @@ func plDownload(emo *Emojis) int {
 		starlog.Errorln("Download failed: ", err)
 		return 1
 	}
-	starlog.Infoln("Done! Saved to: ", emo.SaveFolders)
+	starlog.Infoln("Emoji saved to: ", emo.SaveFolders)
 	return 0
 }
