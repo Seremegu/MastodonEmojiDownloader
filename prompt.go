@@ -92,7 +92,7 @@ func plParseJson(emo *Emojis) int {
 func plGetDownloadChoice(emo *Emojis) int {
 	ct, orderSlice, allCat := emo.Counts()
 	fmt.Println("Results for each category: ")
-	fmt.Printf("%-5s %-10s %-28s\n", "No.", "Emojis", "Name"
+	fmt.Printf("%-5s %-10s %-28s\n", "No.", "Emojis", "Name")
 	for k, v := range orderSlice {
 		fmt.Printf("%-5v %-10d %-28s\n", k+1, allCat[v], v)
 	}
