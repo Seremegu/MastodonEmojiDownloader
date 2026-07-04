@@ -17,18 +17,18 @@ var useJson bool
 
 func init() {
 	cmdRoot.AddCommand(cmdMain, cmdShow)
-	cmdMain.Flags().StringVarP(&emo.SaveFolders, "savepath", "s", "./Emojis", "Enter the path of the emoji download folder. (Default is 'Emojis' in the current path)")
-	cmdMain.Flags().StringVarP(&emo.AuthCookie, "cookie", "c", "", "Enter the value of '_session_id' for the authentication cookie. (Optional)")
-	cmdMain.Flags().BoolVarP(&emo.IgnoreErr, "ignore-error", "i", false, "Ignore download errors? (Default is false)")
-	cmdMain.Flags().BoolVarP(&emo.Zip2Tarfile, "zip", "z", true, "Compress into a tar.gz file? (Default is true)")
-	cmdMain.Flags().BoolVarP(&emo.DeletedOriginIfZip, "delete-after-zip", "d", false, "Delete the folder after compressing? (Default is false)")
-	cmdMain.Flags().StringSliceVarP(&allowCate, "allow-download-category", "a", []string{}, "Categories to download? (Optional)")
-	cmdMain.Flags().StringVarP(&regFilter, "filter", "f", "", "Enter the RegEx for the emoji name whitelist. (Optional)")
-	cmdMain.Flags().StringVarP(&regOld, "replace-old", "o", "", "Enter the RegEx for replacing old emoji names with new ones. (Optional)")
-	cmdMain.Flags().StringVarP(&regNew, "replace-new", "r", "", "Enter the RegEx for replacing emoji names with a new string. (Optional)")
-	cmdMain.Flags().IntVarP(&emo.Threads, "threads", "n", 4, "Number of concurrent downloads? (Optional, default is 4)")
-	cmdMain.Flags().StringVarP(&emo.Proxy, "proxy", "p", "", "Use a proxy? (Optional)")
-	cmdRoot.PersistentFlags().BoolVarP(&useJson, "use-json-file", "j", false, "Use a JSON file instead of a URL? (Optional, default is false)")
+	cmdMain.Flags().StringVarP(&emo.SaveFolders, "savepath", "s", "./Emojis", "Path of the emoji download folder. (Default is 'Emojis' in the current path)")
+	cmdMain.Flags().StringVarP(&emo.AuthCookie, "cookie", "c", "", "Value of '_session_id' for the authentication cookie. (Optional)")
+	cmdMain.Flags().BoolVarP(&emo.IgnoreErr, "ignore-error", "i", false, "Ignore download errors (Default is false)")
+	cmdMain.Flags().BoolVarP(&emo.Zip2Tarfile, "zip", "z", true, "Compress into a tar.gz file (Default is true)")
+	cmdMain.Flags().BoolVarP(&emo.DeletedOriginIfZip, "delete-after-zip", "d", false, "Delete the folder after compressing (Default is false)")
+	cmdMain.Flags().StringSliceVarP(&allowCate, "allow-download-category", "a", []string{}, "Categories to download (Optional)")
+	cmdMain.Flags().StringVarP(&regFilter, "filter", "f", "", "RegEx for the emoji name whitelist. (Optional)")
+	cmdMain.Flags().StringVarP(&regOld, "replace-old", "o", "", "RegEx for replacing old emoji names with new ones. (Optional)")
+	cmdMain.Flags().StringVarP(&regNew, "replace-new", "r", "", "RegEx for replacing emoji names with a new string. (Optional)")
+	cmdMain.Flags().IntVarP(&emo.Threads, "threads", "n", 16, "Number of concurrent downloads (Optional, default is 16)")
+	cmdMain.Flags().StringVarP(&emo.Proxy, "proxy", "p", "", "Use a proxy (Optional)")
+	cmdRoot.PersistentFlags().BoolVarP(&useJson, "use-json-file", "j", false, "Use a JSON file (Optional, default is false)")
 }
 
 var cmdRoot = &cobra.Command{
