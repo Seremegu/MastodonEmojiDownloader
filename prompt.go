@@ -12,14 +12,14 @@ import (
 
 var showFn = func(v Emoji, finished bool, err error) {
 	if err != nil {
-		starlog.Errorf("Download error for emoji '%s' in category '%-10s': %v \n", v.Category, v.ShortCode, err)
+		starlog.Errorf("Download error for emoji '%-10s' in category '%s': %v \n", v.Category, v.ShortCode, err)
 		return
 	}
 	if !finished {
-		starlog.Noticef("Downloading emoji '%s' in category '%-10s' \n", v.Category, v.ShortCode)
+		starlog.Noticef("Downloading emoji '%-10s' in category '%s' \n", v.Category, v.ShortCode)
 		return
 	}
-	starlog.Infof("Downloaded emoji '%s' in category '%-10s' \n", v.Category, v.ShortCode)
+	starlog.Infof("Downloaded emoji '%-10s' in category '%s' \n", v.Category, v.ShortCode)
 }
 
 func PromotMode() {
@@ -58,13 +58,13 @@ func plParseJson(emo *Emojis) int {
 	}
 	for {
 		if fromSite {
-			fmt.Print("Enter the Mastodon server domain name, without 'https':")
+			fmt.Print("Enter the Mastodon server domain name, without 'https': ")
 		} else {
-			fmt.Print("Enter the path of the JSON file:")
+			fmt.Print("Enter the path of the JSON file: ")
 		}
 		fpath = stario.MessageBox("", "").MustString()
 		if fpath == "" {
-			starlog.Red("Please enter the actual input.")
+			starlog.Red("Please enter the actual input. ")
 			continue
 		}
 		break
@@ -74,16 +74,16 @@ func plParseJson(emo *Emojis) int {
 			fpath = "https://" + fpath
 		}
 		if stario.YesNo("Use a proxy? (y/N)", false) {
-			emo.Proxy = stario.MessageBox("Enter the proxy address:", "").MustString()
+			emo.Proxy = stario.MessageBox("Enter the proxy address: ", "").MustString()
 		}
 		if stario.YesNo("Use a Mastodon cookie? (y/N)", false) {
-			emo.AuthCookie = stario.MessageBox("Enter the value of '_session_id' for the authentication cookie:", "").MustString()
+			emo.AuthCookie = stario.MessageBox("Enter the value of '_session_id' for the authentication cookie: ", "").MustString()
 		}
 	}
 	starlog.Infoln("Parsing...")
 	err := emo.LoadAndParse(fpath, fromSite)
 	if err != nil {
-		starlog.Errorln("Parsing failed! Please check your input.", err)
+		starlog.Errorln("Parsing failed! Please check your input. ", err)
 		return 1
 	}
 	return 0
@@ -99,9 +99,9 @@ func plGetDownloadChoice(emo *Emojis) int {
 	starlog.Green("%d emojis found in %d categories\n", len(orderSlice), ct)
 exitfor:
 	for {
-		choice, err := stario.MessageBox("Enter the category numbers you want to download. To download multiple categories, separate the numbers with commas. (Optional)", "0").SliceInt(",")
+		choice, err := stario.MessageBox("Enter the category # you want to download. To download multiple categories, separate the numbers with commas. (Optional) ", "0").SliceInt(",")
 		if err != nil {
-			starlog.Errorln("Please check your input, or just press Enter.", err)
+			starlog.Errorln("Error: ", err, "Please check your input, or just press Enter.")
 			continue
 		}
 		for _, v := range choice {
@@ -111,7 +111,7 @@ exitfor:
 				break exitfor
 			}
 			emo.AllowCategories[orderSlice[v-1]] = true
-			fmt.Println("Will download:", orderSlice[v-1])
+			fmt.Println("Will download: ", orderSlice[v-1])
 		}
 		break
 	}
@@ -119,7 +119,7 @@ exitfor:
 }
 
 func plRegexp(emo *Emojis) int {
-	if stario.YesNo("Enable the emoji name whitelist, using RegEx? (y/N)", false) {
+	if stario.YesNo("Enable the emoji name whitelist, using RegEx? (y/N): ", false) {
 		for {
 			rgpR, err := regexp.Compile(stario.MessageBox("Please enter the RegEx for the whitelist: ", "").MustString())
 			if err != nil {
@@ -130,7 +130,7 @@ func plRegexp(emo *Emojis) int {
 			break
 		}
 	}
-	if stario.YesNo("Enable the emoji name replacement, using RegEx?  (y/N)", false) {
+	if stario.YesNo("Enable the emoji name replacement, using RegEx? (y/N): ", false) {
 		for {
 			rgpR, err := regexp.Compile(stario.MessageBox("Enter the RegEx for replacing old emoji names with new ones: ", "").MustString())
 			if err != nil {
@@ -146,11 +146,11 @@ func plRegexp(emo *Emojis) int {
 }
 
 func plDownload(emo *Emojis) int {
-	emo.SaveFolders = stario.MessageBox("Enter the path of the emoji download folder. (Default is 'Emojis' in the current path)：", "./Emojis").MustString()
-	emo.IgnoreErr = stario.YesNo("Ignore download errors? (Y/n)", true)
-	emo.Zip2Tarfile = stario.YesNo("Compress into a tar.gz file? (Y/n)", true)
+	emo.SaveFolders = stario.MessageBox("Enter the path of the emoji download folder. (Default is 'Emojis' in the current path)： ", "./Emojis").MustString()
+	emo.IgnoreErr = stario.YesNo("Ignore download errors? (Y/n): ", true)
+	emo.Zip2Tarfile = stario.YesNo("Compress each category into a tar.gz file? (Y/n): ", true)
 	if emo.Zip2Tarfile {
-		emo.DeletedOriginIfZip = stario.YesNo("Delete the folder after compressing? (y/N)", false)
+		emo.DeletedOriginIfZip = stario.YesNo("Delete the folder(s) after compressing? (y/N): ", false)
 	}
 	for {
 		emo.Threads = stario.MessageBox("Number of concurrent downloads (Optional, default is 16)：", "16").MustInt()
@@ -161,7 +161,7 @@ func plDownload(emo *Emojis) int {
 		break
 	}
 	var fn func(v Emoji, finished bool, err error) = nil
-	if stario.YesNo("Display the download log? (Y/n)", true) {
+	if stario.YesNo("Display the download log? (Y/n): ", true) {
 		fn = showFn
 	}
 	starlog.Infoln("Downloading...")
